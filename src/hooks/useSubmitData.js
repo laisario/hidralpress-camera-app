@@ -11,7 +11,7 @@ const useSubmitData = () => {
     return response.data;
   }
 
-  const { mutate, isLoading } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: postData,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['images'] });
@@ -23,7 +23,7 @@ const useSubmitData = () => {
 
   return {
     handleSubmit: mutate,
-    isLoading,
+    isPending,
     error,
     setError,
   };

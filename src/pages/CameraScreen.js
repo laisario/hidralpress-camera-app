@@ -30,7 +30,7 @@ function CameraScreen({route}) {
     handleSubmit, 
     error, 
     setError, 
-    isLoading
+    isPending
   } = useSubmitData();
 
   const { 
@@ -62,7 +62,6 @@ function CameraScreen({route}) {
   
     launchCamera(options, response => {
       if (response.didCancel) {
-        console.error('User cancelled camera');
         return null
       } else if (response.error) {
         console.error('Camera Error: ', response.error);
@@ -91,7 +90,7 @@ function CameraScreen({route}) {
             onValueChange={(itemValue) => setStep(itemValue)}
             style={styles.picker}
           >
-            <Picker.Item label="Escolha a etapa:" value="" />
+            <Picker.Item label="Escolha a etapa" value="" />
             {stepsMapping[sector]?.length && stepsMapping[sector]?.map((stepItem) => (
               <Picker.Item
                 label={stepsText[sector]?.[stepItem?.name]}
@@ -119,7 +118,7 @@ function CameraScreen({route}) {
           </TouchableOpacity>
         </View>
 
-        { isLoading 
+        {isPending 
           ? <Loading /> 
           : (
             <ImageGallery
@@ -127,6 +126,7 @@ function CameraScreen({route}) {
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
               isLoadingImgs={isLoadingImgs}
+              hasStep={step.length > 1}
             />
           )
         }
