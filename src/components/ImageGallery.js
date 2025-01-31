@@ -12,7 +12,7 @@ const ImageGallery = (props) => {
   } = props;
 
   return (
-    <View style={styles.container}>
+    <View>
       <View style={styles.selectedImageContainer}>
         {selectedImage?.image ? (
           <Image
@@ -59,11 +59,6 @@ const ImageGallery = (props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    alignSelf: 'center',
-    textAlign: 'center',
-  },
   selectedImageContainer: {
     padding: 10,
     alignItems: 'center'
