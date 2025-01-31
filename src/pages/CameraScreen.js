@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import { useData } from '../hooks/useData';
@@ -24,7 +24,7 @@ const stepsText = {
 function CameraScreen({route}) {
   const { os, sector } = route.params;
   const [step, setStep] = useState("");
-  const [selectedImage, setSelectedImage] = useState();
+  const [selectedImage, setSelectedImage] = useState(null);
   const { stepsMapping } = useData();
   const { 
     handleSubmit, 
@@ -87,7 +87,7 @@ function CameraScreen({route}) {
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={step}
-            onValueChange={(itemValue) => setStep(itemValue)}
+            onValueChange={(itemValue) => {setStep(itemValue); setSelectedImage(null)}}
             style={styles.picker}
           >
             <Picker.Item label="Escolha a etapa" value="" />
@@ -104,13 +104,13 @@ function CameraScreen({route}) {
           <TouchableOpacity
             style={[
               styles.containedButton,
-              { backgroundColor: (images?.length > 1 && step) 
+              { backgroundColor: !!step 
                 ? colors.primary 
                 : colors.disabled 
               },
             ]}
             onPress={handleCameraLaunch}
-            disabled={step.length < 1}
+            disabled={!step}
           >
             <Text style={styles.containedButtonText}>
               Bater foto
@@ -126,7 +126,7 @@ function CameraScreen({route}) {
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
               isLoadingImgs={isLoadingImgs}
-              hasStep={step.length > 1}
+              hasStep={!!step}
             />
           )
         }
@@ -138,13 +138,13 @@ function CameraScreen({route}) {
         <TouchableOpacity
           style={[
             styles.containedButton,
-            { backgroundColor: (images?.length > 1 && step) 
+            { backgroundColor: (images?.length >= 1 && !!step) 
               ? colors.primary 
               : colors.disabled 
             },
           ]}
           onPress={handleClickFinish}
-          disabled={!(images?.length > 1 && step)}
+          disabled={!(images?.length >= 1 && !!step)}
         >
           <Text style={styles.containedButtonText}>
             Finalizar

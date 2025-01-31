@@ -18,6 +18,7 @@ const useImages = ({ step, os }) => {
     queryKey: ['images', step, os],
     queryFn: async () => fetchImages(step?.toUpperCase(), os),
     enabled: !!step && !!os,
+    onError: () => setError('Erro ao recuperar imagens')
   });
 
 

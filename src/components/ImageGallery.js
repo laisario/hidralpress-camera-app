@@ -2,18 +2,34 @@ import React from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import Loading from './Loading';
 
-const ImageGallery = ({ images, selectedImage, setSelectedImage, isLoadingImgs, hasStep }) => {
+const ImageGallery = (props) => {
+  const { 
+    images, 
+    selectedImage, 
+    setSelectedImage, 
+    isLoadingImgs, 
+    hasStep
+  } = props;
+
   return (
     <View style={styles.container}>
       <View style={styles.selectedImageContainer}>
         {selectedImage?.image ? (
           <Image
-            source={{ uri: selectedImage.image }}
+            source={{ uri: selectedImage.thumbnail }}
             style={styles.selectedImage}
             resizeMode="contain"
           />
         ) : (
-          <Text style={styles.noImageText}>{hasStep ? 'Nenhuma imagem selecionada' : 'Selecione uma etapa'}</Text>
+          <Text 
+            style={styles.noImageText}
+          >
+            {hasStep 
+            ? (!!images?.length 
+              ? 'Nenhuma imagem selecionada' 
+              : 'Tire uma foto')
+            : 'Selecione uma etapa'}
+          </Text>
         )}
       </View>
 
@@ -22,10 +38,13 @@ const ImageGallery = ({ images, selectedImage, setSelectedImage, isLoadingImgs, 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.thumbnailContainer}
       >
-        {isLoadingImgs && hasStep 
+        {(isLoadingImgs && hasStep) 
           ? <Loading /> 
           : images?.map((img, i) => (
-            <TouchableOpacity key={img?.thumbnail} onPress={() => setSelectedImage(img)}>
+            <TouchableOpacity
+              key={img?.thumbnail} 
+              onPress={() => setSelectedImage(img)}
+            >
               <View style={[
                 styles.thumbnailWrapper,
                 selectedImage?.thumbnail === img?.thumbnail && styles.selectedThumbnail
@@ -44,7 +63,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     textAlign: 'center',
-    marginTop: 20
   },
   selectedImageContainer: {
     padding: 10,
