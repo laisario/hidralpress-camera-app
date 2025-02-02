@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { 
+  View, 
+  Text, 
+  Image, 
+  ScrollView, 
+  TouchableOpacity, 
+  StyleSheet
+} from 'react-native';
 import Loading from './Loading';
 
 const ImageGallery = (props) => {

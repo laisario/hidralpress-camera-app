@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, Button, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  Alert, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View 
+} from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import { useData } from '../hooks/useData';
 import { Picker } from "@react-native-picker/picker";
@@ -79,7 +86,7 @@ function CameraScreen({route}) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} style={styles.scrollContainer}>
       <View style={styles.insideContainer}>
         <Text variant="titleMedium" style={styles.title}>
           Selecione a etapa que está fotografando:
@@ -93,9 +100,9 @@ function CameraScreen({route}) {
             <Picker.Item label="Escolha a etapa" value="" />
             {stepsMapping[sector]?.length && stepsMapping[sector]?.map((stepItem) => (
               <Picker.Item
-                label={stepsText[sector]?.[stepItem?.name]}
-                value={stepItem?.name}
-                key={stepItem?.id}
+              label={stepsText[sector]?.[stepItem?.name]}
+              value={stepItem?.name}
+              key={stepItem?.id}
               />
             ))}
           </Picker>
@@ -111,7 +118,7 @@ function CameraScreen({route}) {
             ]}
             onPress={handleCameraLaunch}
             disabled={!step}
-          >
+            >
             <Text style={styles.containedButtonText}>
               Bater foto
             </Text>
@@ -122,14 +129,14 @@ function CameraScreen({route}) {
           ? <Loading /> 
           : (
             <ImageGallery
-              images={images}
+            images={images}
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
               isLoadingImgs={isLoadingImgs}
               hasStep={!!step}
-            />
-          )
-        }
+              />
+            )
+          }
       </View>
 
       {error && Alert.alert('Erro', error, [{ text: 'OK', onPress: () => setError(false) }])}
@@ -151,7 +158,7 @@ function CameraScreen({route}) {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
@@ -160,9 +167,12 @@ export default CameraScreen;
 
 const makeStyles = (colors) => StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: colors.background,
     justifyContent: 'space-between',
+  },
+  scrollContainer: {
+    color: colors.primary,
   },
   insideContainer: {
     padding: 8
@@ -209,4 +219,5 @@ const makeStyles = (colors) => StyleSheet.create({
     height: 200,
     resizeMode: 'stretch',
   },
+
 });
