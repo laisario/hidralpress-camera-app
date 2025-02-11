@@ -35,7 +35,8 @@ function FormScreen() {
       if (response?.data?.ok) {
         navigation.navigate('Setor', { os: fullOs });
       } else {
-        setError(`Pasta '${fullOs}' não encontrada.`);
+        const msg = response?.data?.msg ? response?.data?.msg : `Pasta '${fullOs}' não encontrada.`
+        setError(msg);
       }
     } catch (error) {
       console.error(error.response);
