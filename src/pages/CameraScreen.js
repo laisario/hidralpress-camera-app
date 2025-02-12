@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Alert, 
+  Dimensions, 
   ScrollView, 
   StyleSheet, 
   Text, 
@@ -46,6 +47,7 @@ function CameraScreen({route}) {
   } = useImages({ step, os })
   const navigation = useNavigation();
 
+
   const { colors } = useTheme();
   const styles = makeStyles(colors);
 
@@ -58,7 +60,7 @@ function CameraScreen({route}) {
     handleSubmit(data)
   }
   
-  const handleCameraLaunch = () => {
+  const handleCameraPhotoLaunch = () => {
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
@@ -78,6 +80,29 @@ function CameraScreen({route}) {
       const imageName = response.fileName || response.assets?.[0]?.fileName;
       const imageType = response.type || response.assets?.[0]?.type;
       sendPhoto({uri: imageUri, name: imageName, type: imageType})
+    });
+  }
+
+  const handleCameraVideoLaunch = () => {
+    const options = {
+      mediaType: 'video',
+      cameraType: 'back',
+      includeBase64: false,
+      maxHeight: 1920,
+      maxWidth: 1080,
+    };
+  
+    launchCamera(options, response => {
+      if (response.didCancel) {
+        return null
+      } else if (response.error) {
+        console.error('Camera Error: ', response.error);
+        return null
+      } 
+      const videoUri = response.uri || response.assets?.[0]?.uri;
+      const videoName = response.fileName || response.assets?.[0]?.fileName;
+      const videoType = response.type || response.assets?.[0]?.type;
+      sendPhoto({uri: videoUri, name: videoName, type: videoType})
     });
   }
 
@@ -107,37 +132,57 @@ function CameraScreen({route}) {
             ))}
           </Picker>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.containedButton,
-              { backgroundColor: !!step 
-                ? colors.primary 
-                : colors.disabled 
-              },
-            ]}
-            onPress={handleCameraLaunch}
-            disabled={!step}
-            >
-            <Text style={styles.containedButtonText}>
-              Bater foto
-            </Text>
-          </TouchableOpacity>
+        <View style={styles.containerButtons}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.cameraButton,
+                { backgroundColor: !!step 
+                  ? colors.primary 
+                  : colors.disabled 
+                },
+              ]}
+              onPress={handleCameraPhotoLaunch}
+              disabled={!step}
+              >
+              <Text style={styles.containedButtonText}>
+                Bater foto
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.cameraButton,
+                { backgroundColor: !!step 
+                  ? colors.card
+                  : colors.disabled 
+                },
+              ]}
+              onPress={handleCameraVideoLaunch}
+              disabled={!step}
+              >
+              <Text style={styles.containedButtonText}>
+                Gravar vídeo
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {isPending 
-          ? <Loading /> 
-          : (
-            <ImageGallery
-            images={images}
-              selectedImage={selectedImage}
-              setSelectedImage={setSelectedImage}
-              isLoadingImgs={isLoadingImgs}
-              hasStep={!!step}
-              />
-            )
-          }
       </View>
+
+
+      {isPending 
+        ? <Loading /> 
+        : (
+          <ImageGallery
+            images={images}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
+            isLoadingImgs={isLoadingImgs}
+            hasStep={!!step}
+          />
+          )
+      }
 
       {error && Alert.alert('Erro', error, [{ text: 'OK', onPress: () => setError(false) }])}
 
@@ -164,6 +209,7 @@ function CameraScreen({route}) {
 
 export default CameraScreen;
 
+const windowWidth = Dimensions.get('window').width;
 
 const makeStyles = (colors) => StyleSheet.create({
   container: {
@@ -186,7 +232,6 @@ const makeStyles = (colors) => StyleSheet.create({
     borderColor: colors.primary,
     borderRadius: 4,
     overflow: "hidden",
-    marginBottom: 8,
   },
   picker: {
     height: 50,
@@ -198,26 +243,41 @@ const makeStyles = (colors) => StyleSheet.create({
     marginBottom: 16,
   },
   buttonContainer: {
-    width: "100%",
-  },
-  containedButton: {
-    backgroundColor: '#03A9F4',
     alignItems: "center",
     justifyContent: "center",
+  },
+  containedButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 0,
     width: '100%',
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cameraButton: {
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 8,
+    textAlign: 'center',
+    width: windowWidth * 0.4,
   },
   containedButtonText: {
     color: "#fff",
+    textTransform: 'uppercase',
     fontSize: 16,
-    textTransform: 'uppercase'
+    fontWeight: 'bold',
   },
   image: {
     width: 200,
     height: 200,
     resizeMode: 'stretch',
   },
+  containerButtons: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around', 
+    alignItems: 'center',
+    marginTop: 20
+  }
 
 });

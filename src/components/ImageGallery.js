@@ -5,9 +5,32 @@ import {
   Image, 
   ScrollView, 
   TouchableOpacity, 
-  StyleSheet
+  StyleSheet,
+  VirtualizedList,
 } from 'react-native';
 import Loading from './Loading';
+import DeleteButton from './DeleteButton';
+
+
+const renderItem = (images, selectedImage, setSelectedImage) => {
+  return images?.map((img) => (
+    <TouchableOpacity
+      key={img?.thumbnail} 
+      onPress={() => setSelectedImage(img)}
+    >
+      <View style={[
+        styles.thumbnailWrapper,
+        selectedImage?.thumbnail === img?.thumbnail && styles.selectedThumbnail
+      ]}>
+        <Image source={{ uri: img?.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+      </View>
+    </TouchableOpacity>
+  ))
+}
+
+
+const getItem = (data, index) => data[index];
+const getItemCount = (data) => data?.length; 
 
 const ImageGallery = (props) => {
   const { 
@@ -20,13 +43,20 @@ const ImageGallery = (props) => {
 
   return (
     <View>
-      <View style={styles.selectedImageContainer}>
+      <View style={styles.galleryContainer}>
         {selectedImage?.image ? (
-          <Image
-            source={{ uri: selectedImage.thumbnail }}
-            style={styles.selectedImage}
-            resizeMode="contain"
-          />
+          <View style={styles.selectedImageContainer}>
+              <View style={{width: '25%'}} />
+              <Image
+                source={{ uri: selectedImage.thumbnail }}
+                style={styles.selectedImage}
+                resizeMode="contain"
+              />
+              <View style={{width: '25%', alignItems: 'flex-end'}} >
+
+                <DeleteButton />
+              </View>
+          </View>
         ) : (
           <Text 
             style={styles.noImageText}
@@ -40,44 +70,45 @@ const ImageGallery = (props) => {
         )}
       </View>
 
-      <ScrollView
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        contentContainerStyle={styles.thumbnailContainer}
-      >
-        {(isLoadingImgs && hasStep) 
-          ? <Loading /> 
-          : images?.map((img, i) => (
-            <TouchableOpacity
-              key={img?.thumbnail} 
-              onPress={() => setSelectedImage(img)}
-            >
-              <View style={[
-                styles.thumbnailWrapper,
-                selectedImage?.thumbnail === img?.thumbnail && styles.selectedThumbnail
-              ]}>
-                <Image source={{ uri: img?.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
-              </View>
-            </TouchableOpacity>
-          )).reverse()}
-      </ScrollView>
+
+      {(isLoadingImgs && hasStep) 
+        ? <Loading /> 
+        : !!images?.length && (
+            <VirtualizedList
+              horizontal={true}
+              initialNumToRender={4}
+              renderItem={() => renderItem(images, selectedImage, setSelectedImage)}
+              keyExtractor={img => img.id}
+              getItemCount={getItemCount}
+              getItem={getItem}
+              data={images}
+              showsHorizontalScrollIndicator={true}
+            />
+        )
+      }
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  selectedImageContainer: {
+  galleryContainer: {
     padding: 10,
-    alignItems: 'center'
+  },
+  selectedImageContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start'
   },
   selectedImage: {
-    width: '100%',
+    width: '50%',
     height: 300,
     borderRadius: 8,
   },
   noImageText: {
     fontSize: 18,
     color: 'gray',
+    textAlign: 'center'
   },
   thumbnailContainer: {
     flexDirection: 'row',
@@ -89,6 +120,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
     overflow: 'hidden',
+    marginRight: 10,
   },
   selectedThumbnail: {
     borderWidth: 6,
