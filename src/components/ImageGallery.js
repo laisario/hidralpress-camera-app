@@ -3,34 +3,32 @@ import {
   View, 
   Text, 
   Image, 
-  ScrollView, 
   TouchableOpacity, 
   StyleSheet,
-  VirtualizedList,
+  FlatList,
 } from 'react-native';
 import Loading from './Loading';
 import DeleteButton from './DeleteButton';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 
-const renderItem = (images, selectedImage, setSelectedImage) => {
-  return images?.map((img) => (
+const Item = ({item, selectedImage, setSelectedImage}) => {
+  console.log(item, 'achar')
+  return (
     <TouchableOpacity
-      key={img?.thumbnail} 
-      onPress={() => setSelectedImage(img)}
+      key={item?.thumbnail} 
+      onPress={() => setSelectedImage(item)}
     >
       <View style={[
         styles.thumbnailWrapper,
-        selectedImage?.thumbnail === img?.thumbnail && styles.selectedThumbnail
+        selectedImage?.thumbnail === item?.thumbnail && styles.selectedThumbnail
       ]}>
-        <Image source={{ uri: img?.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+        <Image source={{ uri: item?.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
       </View>
     </TouchableOpacity>
-  ))
+  )
 }
 
-
-const getItem = (data, index) => data[index];
-const getItemCount = (data) => data?.length; 
 
 const ImageGallery = (props) => {
   const { 
@@ -40,6 +38,7 @@ const ImageGallery = (props) => {
     isLoadingImgs, 
     hasStep
   } = props;
+
 
   return (
     <View>
@@ -53,7 +52,6 @@ const ImageGallery = (props) => {
                 resizeMode="contain"
               />
               <View style={{width: '25%', alignItems: 'flex-end'}} >
-
                 <DeleteButton />
               </View>
           </View>
@@ -74,16 +72,16 @@ const ImageGallery = (props) => {
       {(isLoadingImgs && hasStep) 
         ? <Loading /> 
         : !!images?.length && (
-            <VirtualizedList
-              horizontal={true}
-              initialNumToRender={4}
-              renderItem={() => renderItem(images, selectedImage, setSelectedImage)}
-              keyExtractor={img => img.id}
-              getItemCount={getItemCount}
-              getItem={getItem}
-              data={images}
-              showsHorizontalScrollIndicator={true}
-            />
+          <SafeAreaProvider>
+            <SafeAreaView style={styles.container}>
+              <FlatList
+                horizontal={true}
+                renderItem={({item}) => <Item item={item} selectedImage={selectedImage} setSelectedImage={setSelectedImage}  />}
+                keyExtractor={img => img.id}
+                data={images}
+              />
+            </SafeAreaView>
+          </SafeAreaProvider>
         )
       }
     </View>
