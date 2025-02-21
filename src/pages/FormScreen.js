@@ -42,7 +42,7 @@ function FormScreen() {
       console.error(error.response);
 
       setLoading(false);
-      setError('Não foi possível realizar esta operação. Verifique se o sistema está no ar.');
+      setError(`Não foi possível realizar esta operação. Verifique se o sistema está no ar. ${JSON.stringify(error.request)}`);
     }
   };
   

@@ -7,23 +7,50 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
+import FastImage from 'react-native-fast-image'
 import Loading from './Loading';
 import DeleteButton from './DeleteButton';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import VideoPlayer from './VideoPlayer';
 
+
+function formatarDataISO(isoString) {
+  const data = new Date(isoString);
+
+  const dia = String(data.getUTCDate()).padStart(2, '0');
+  const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+  const ano = String(data.getUTCFullYear()).slice(-2);
+  const horas = String(data.getUTCHours()).padStart(2, '0');
+  const minutos = String(data.getUTCMinutes()).padStart(2, '0');
+
+  return `${dia}/${mes}/${ano} ${horas}h ${minutos}m`;
+}
 
 const Item = ({item, selectedImage, setSelectedImage}) => {
-  console.log(item, 'achar')
+  const isVideo = item?.image?.endsWith(".mp4");
+
   return (
     <TouchableOpacity
-      key={item?.thumbnail} 
-      onPress={() => setSelectedImage(item)}
+    key={item?.thumbnail} 
+    onPress={() => setSelectedImage(item)}
     >
       <View style={[
         styles.thumbnailWrapper,
-        selectedImage?.thumbnail === item?.thumbnail && styles.selectedThumbnail
+        selectedImage?.thumbnail === item?.thumbnail && styles.selectedThumbnail,
+        isVideo && styles.thumbnailVideo
       ]}>
-        <Image source={{ uri: item?.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+        { isVideo 
+         ? <Text style={styles.thumbnailTitle}>Vídeo {formatarDataISO(item?.created_at)}</Text>
+         :  (
+              <FastImage
+                style={styles.thumbnail}
+                source={{
+                  uri: item?.thumbnail,
+                  priority: FastImage?.priority?.normal,
+                }}
+                resizeMode={FastImage?.resizeMode?.cover}
+              />
+        )}
       </View>
     </TouchableOpacity>
   )
@@ -36,9 +63,12 @@ const ImageGallery = (props) => {
     selectedImage, 
     setSelectedImage, 
     isLoadingImgs, 
-    hasStep
+    hasStep,
+    deleteImg,
+    isPendingDelete 
   } = props;
-
+  
+  const isVideo = selectedImage?.image?.endsWith(".mp4");
 
   return (
     <View>
@@ -46,13 +76,30 @@ const ImageGallery = (props) => {
         {selectedImage?.image ? (
           <View style={styles.selectedImageContainer}>
               <View style={{width: '25%'}} />
-              <Image
-                source={{ uri: selectedImage.thumbnail }}
-                style={styles.selectedImage}
-                resizeMode="contain"
-              />
+              {isPendingDelete 
+                ? <Loading /> 
+                : isVideo
+                  ? 
+                    <VideoPlayer 
+                      video={selectedImage?.image}
+                    />
+                  : <FastImage
+                      source={{ 
+                        uri: selectedImage.thumbnail,
+                        priority: FastImage.priority.high,
+                      }}
+                      style={styles.selectedImage}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+              }
               <View style={{width: '25%', alignItems: 'flex-end'}} >
-                <DeleteButton />
+               {selectedImage?.id > 0  && (
+                  <DeleteButton 
+                    onPress={deleteImg} 
+                    selectedImage={selectedImage}
+                    setSelectedImage={setSelectedImage}
+                  />
+                )}
               </View>
           </View>
         ) : (
@@ -61,8 +108,8 @@ const ImageGallery = (props) => {
           >
             {hasStep 
             ? (!!images?.length 
-              ? 'Nenhuma imagem selecionada' 
-              : 'Tire uma foto')
+              ? 'Nenhuma imagem ou vídeo selecionado' 
+              : 'Tire uma foto ou grave um vídeo')
             : 'Selecione uma etapa'}
           </Text>
         )}
@@ -92,6 +139,9 @@ const styles = StyleSheet.create({
   galleryContainer: {
     padding: 10,
   },
+  container: {
+    marginBottom: 10
+  },
   selectedImageContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -119,6 +169,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     marginRight: 10,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   selectedThumbnail: {
     borderWidth: 6,
@@ -132,6 +185,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  thumbnailVideo: {
+    backgroundColor: 'rgb(170, 170, 170)'
+
+  },
+  thumbnailTitle: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold'
+  }
 });
 
 export default ImageGallery;

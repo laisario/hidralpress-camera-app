@@ -43,10 +43,11 @@ function CameraScreen({route}) {
 
   const { 
     images, 
-    isLoadingImgs
+    isLoadingImgs,
+    deleteImg,
+    isPendingDelete 
   } = useImages({ step, os })
   const navigation = useNavigation();
-
 
   const { colors } = useTheme();
   const styles = makeStyles(colors);
@@ -171,18 +172,15 @@ function CameraScreen({route}) {
       </View>
 
 
-      {isPending 
-        ? <Loading /> 
-        : (
-          <ImageGallery
-            images={images}
-            selectedImage={selectedImage}
-            setSelectedImage={setSelectedImage}
-            isLoadingImgs={isLoadingImgs}
-            hasStep={!!step}
-          />
-          )
-      }
+      <ImageGallery
+        images={images}
+        selectedImage={selectedImage}
+        setSelectedImage={setSelectedImage}
+        isLoadingImgs={isLoadingImgs}
+        hasStep={!!step}
+        deleteImg={deleteImg}
+        isPendingDelete={isPendingDelete}
+      />
 
       {error && Alert.alert('Erro', error, [{ text: 'OK', onPress: () => setError(false) }])}
 
@@ -264,8 +262,9 @@ const makeStyles = (colors) => StyleSheet.create({
   containedButtonText: {
     color: "#fff",
     textTransform: 'uppercase',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   image: {
     width: 200,
