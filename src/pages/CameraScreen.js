@@ -13,9 +13,9 @@ import { useData } from '../hooks/useData';
 import { Picker } from "@react-native-picker/picker";
 import useSubmitData from '../hooks/useSubmitData';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import useImages from '../hooks/useImages';
 import ImageGallery from '../components/ImageGallery';
 import Loading from '../components/Loading';
+import useContent from '../hooks/useImages';
 
 const stepsText = {
   'desmontagem': {
@@ -42,22 +42,24 @@ function CameraScreen({route}) {
   } = useSubmitData();
 
   const { 
-    images, 
+    content, 
     isLoadingImgs,
-    deleteImg,
-    isPendingDelete 
-  } = useImages({ step, os })
+  } = useContent({ step, os })
   const navigation = useNavigation();
 
   const { colors } = useTheme();
   const styles = makeStyles(colors);
 
-  const sendPhoto = async (image) => {
+  const sendPhoto = async (file, isImg) => {
     const data = new FormData();
     data.append('os', os);
     data.append('sector', sector);
     data.append('step', step);
-    data.append('image', image);
+    if (isImg) {
+      data.append('image', file);
+    } else {
+      data.append('video', file)
+    }
     handleSubmit(data)
   }
   
@@ -80,7 +82,7 @@ function CameraScreen({route}) {
       const imageUri = response.uri || response.assets?.[0]?.uri;
       const imageName = response.fileName || response.assets?.[0]?.fileName;
       const imageType = response.type || response.assets?.[0]?.type;
-      sendPhoto({uri: imageUri, name: imageName, type: imageType})
+      sendPhoto({uri: imageUri, name: imageName, type: imageType}, true)
     });
   }
 
@@ -100,10 +102,10 @@ function CameraScreen({route}) {
         console.error('Camera Error: ', response.error);
         return null
       } 
-      const videoUri = response.uri || response.assets?.[0]?.uri;
-      const videoName = response.fileName || response.assets?.[0]?.fileName;
-      const videoType = response.type || response.assets?.[0]?.type;
-      sendPhoto({uri: videoUri, name: videoName, type: videoType})
+      const videoUri = response?.uri || response?.assets?.[0]?.uri;
+      const videoName = response?.fileName || response?.assets?.[0]?.fileName;
+      const videoType = response?.type || response?.assets?.[0]?.type;
+      sendPhoto({uri: videoUri, name: videoName, type: videoType}, false)
     });
   }
 
@@ -171,15 +173,12 @@ function CameraScreen({route}) {
         </View>
       </View>
 
-
       <ImageGallery
-        images={images}
+        content={content}
         selectedImage={selectedImage}
         setSelectedImage={setSelectedImage}
         isLoadingImgs={isLoadingImgs}
         hasStep={!!step}
-        deleteImg={deleteImg}
-        isPendingDelete={isPendingDelete}
       />
 
       {error && Alert.alert('Erro', error, [{ text: 'OK', onPress: () => setError(false) }])}
@@ -188,13 +187,13 @@ function CameraScreen({route}) {
         <TouchableOpacity
           style={[
             styles.containedButton,
-            { backgroundColor: (images?.length >= 1 && !!step) 
+            { backgroundColor: (content?.length >= 1 && !!step) 
               ? colors.primary 
               : colors.disabled 
             },
           ]}
           onPress={handleClickFinish}
-          disabled={!(images?.length >= 1 && !!step)}
+          disabled={!(content?.length >= 1 && !!step)}
         >
           <Text style={styles.containedButtonText}>
             Finalizar

@@ -22,5 +22,5 @@ export const useData = () => {
     'montagem': steps?.filter((step) => step?.sector?.name === 'montagem'),
     'desmontagem': steps?.filter((step) => step?.sector?.name === 'desmontagem')
   }
-   return { sectors, steps, stepsMapping }
+  return { sectors, steps, stepsMapping }
 }

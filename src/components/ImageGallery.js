@@ -2,45 +2,32 @@ import React from 'react';
 import { 
   View, 
   Text, 
-  Image, 
   TouchableOpacity, 
   StyleSheet,
   FlatList,
 } from 'react-native';
 import FastImage from 'react-native-fast-image'
 import Loading from './Loading';
-import DeleteButton from './DeleteButton';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import VideoPlayer from './VideoPlayer';
 
 
-function formatarDataISO(isoString) {
-  const data = new Date(isoString);
-
-  const dia = String(data.getUTCDate()).padStart(2, '0');
-  const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
-  const ano = String(data.getUTCFullYear()).slice(-2);
-  const horas = String(data.getUTCHours()).padStart(2, '0');
-  const minutos = String(data.getUTCMinutes()).padStart(2, '0');
-
-  return `${dia}/${mes}/${ano} ${horas}h ${minutos}m`;
-}
-
-const Item = ({item, selectedImage, setSelectedImage}) => {
-  const isVideo = item?.image?.endsWith(".mp4");
+const Item = ({item: propItem, selectedImage, setSelectedImage}) => {
+  const isVideo = propItem?.video;
+  const item = isVideo ? propItem?.video : propItem?.image
 
   return (
     <TouchableOpacity
-    key={item?.thumbnail} 
-    onPress={() => setSelectedImage(item)}
+      key={item?.id} 
+      onPress={() => setSelectedImage(item)}
     >
       <View style={[
         styles.thumbnailWrapper,
-        selectedImage?.thumbnail === item?.thumbnail && styles.selectedThumbnail,
+        selectedImage?.id === item?.id && styles.selectedThumbnail,
         isVideo && styles.thumbnailVideo
       ]}>
-        { isVideo 
-         ? <Text style={styles.thumbnailTitle}>Vídeo {formatarDataISO(item?.created_at)}</Text>
+        {isVideo 
+         ? <Text style={styles.thumbnailTitle}>Vídeo {item?.id}</Text>
          :  (
               <FastImage
                 style={styles.thumbnail}
@@ -59,55 +46,44 @@ const Item = ({item, selectedImage, setSelectedImage}) => {
 
 const ImageGallery = (props) => {
   const { 
-    images, 
+    content, 
     selectedImage, 
     setSelectedImage, 
     isLoadingImgs, 
     hasStep,
-    deleteImg,
-    isPendingDelete 
+    isPendingDelete,
+    isPendingDeleteVideo,
   } = props;
-  
-  const isVideo = selectedImage?.image?.endsWith(".mp4");
+  const isVideo = selectedImage?.video;
 
   return (
     <View>
       <View style={styles.galleryContainer}>
-        {selectedImage?.image ? (
+        {selectedImage?.image || selectedImage?.video ? (
           <View style={styles.selectedImageContainer}>
-              <View style={{width: '25%'}} />
-              {isPendingDelete 
+              {isPendingDelete || isPendingDeleteVideo 
                 ? <Loading /> 
                 : isVideo
                   ? 
                     <VideoPlayer 
-                      video={selectedImage?.image}
+                      video={selectedImage?.video}
                     />
                   : <FastImage
                       source={{ 
-                        uri: selectedImage.thumbnail,
+                        uri: selectedImage.image,
                         priority: FastImage.priority.high,
                       }}
                       style={styles.selectedImage}
                       resizeMode={FastImage.resizeMode.contain}
                     />
               }
-              <View style={{width: '25%', alignItems: 'flex-end'}} >
-               {selectedImage?.id > 0  && (
-                  <DeleteButton 
-                    onPress={deleteImg} 
-                    selectedImage={selectedImage}
-                    setSelectedImage={setSelectedImage}
-                  />
-                )}
-              </View>
           </View>
         ) : (
           <Text 
             style={styles.noImageText}
           >
             {hasStep 
-            ? (!!images?.length 
+            ? (!!content?.length 
               ? 'Nenhuma imagem ou vídeo selecionado' 
               : 'Tire uma foto ou grave um vídeo')
             : 'Selecione uma etapa'}
@@ -118,14 +94,14 @@ const ImageGallery = (props) => {
 
       {(isLoadingImgs && hasStep) 
         ? <Loading /> 
-        : !!images?.length && (
+        : !!content?.length && (
           <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
               <FlatList
-                horizontal={true}
+                horizontal
                 renderItem={({item}) => <Item item={item} selectedImage={selectedImage} setSelectedImage={setSelectedImage}  />}
-                keyExtractor={img => img.id}
-                data={images}
+                keyExtractor={img => img?.video?.id || img?.image?.id}
+                data={content}
               />
             </SafeAreaView>
           </SafeAreaProvider>
